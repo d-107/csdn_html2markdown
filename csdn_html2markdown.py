@@ -32,7 +32,7 @@ ss = {
 }
 
 
-def clean_h_tags(html):
+def format_h_tags(html):
     markdown_h_tags = {
         'h1': "#",
         'h2': "##",
@@ -48,8 +48,13 @@ def clean_h_tags(html):
         tag.replaceWithChildren()
 
 
-def clean_p_tags(html):
+def format_p_tags(html):
     for tag in html.findAll('p'):
+        tag.replaceWithChildren()
+
+
+def format_img_tags(html):
+    for tag in html.findAll('img'):
         tag.replaceWithChildren()
 
 
@@ -73,8 +78,9 @@ def handle(html):
     html.find('svg').decompose()
     html.find('br').decompose()
 
-    clean_h_tags(html)
-    clean_p_tags(html)
+    format_h_tags(html)
+    format_p_tags(html)
+    format_img_tags(html)
     print(html)
 
 
