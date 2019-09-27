@@ -1,4 +1,6 @@
+import os
 import re
+from urllib.request import urlretrieve
 
 import requests
 from bs4 import BeautifulSoup, Comment
@@ -21,8 +23,6 @@ _supportTags = {
     'sup', 'sub',
     'section'
 }
-
-
 
 ss = {
     "blockquote": ">",
@@ -53,9 +53,20 @@ def format_p_tags(html):
         tag.replaceWithChildren()
 
 
-def format_img_tags(html):
-    for tag in html.findAll('img'):
-        tag.replaceWithChildren()
+def format_img_tags(title, html):
+    for img in html.find('div', {'id': 'content_views'}).findAll("img"):
+        img_url = img.get('src')
+        if img_url is not None:
+            file_name = img_url.split('?')[0]
+            file_name = file_name.split('/')[-1]
+            path = './' + title
+
+            if not os.path.exists(path):
+                os.makedirs(path)
+            file_path = os.path.join(path, file_name)
+            urlretrieve(img_url, file_path)
+            img.string = '![' + img.get('alt') + '](' + file_path + ')'
+            img.replaceWithChildren()
 
 
 def handle(html):
@@ -80,14 +91,18 @@ def handle(html):
 
     format_h_tags(html)
     format_p_tags(html)
-    format_img_tags(html)
+    format_img_tags(title, html)
     print(html)
 
 
 def main():
-    url = 'https://blog.csdn.net/weixin_44518486/article/details/101194267'
-    str_html = requests.get(url)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
+    }
+    url = 'https://blog.csdn.net/u012050154/article/details/77745224'
+    str_html = requests.get(url, headers=headers)
     html = BeautifulSoup(str_html.text, 'html.parser')
+    print(str_html.text)
     handle(html)
 
 
